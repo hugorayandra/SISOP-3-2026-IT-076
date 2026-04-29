@@ -1,4 +1,4 @@
-# README.md
+# PRAKTIKUM SISOP MODUL 3 IPC, RPC, & THREAD
 
 ## Identitas
 
@@ -9,12 +9,6 @@
 ---
 
 # Soal 1 - Present day, Present time
-
-## Identitas
-
-* Nama  : Muhammad Hugo Rayandra
-* NRP   : 5027251076
-* Kelas : C
 
 ---
 
