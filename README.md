@@ -768,7 +768,10 @@ CLIENT → SERVER → CLIENT
 * Mendukung admin control
 
 ---
+## Kesimpulan
 
+Program ini berhasil mengimplementasikan sistem chat multi-client berbasis TCP dengan fitur admin dan logging. Penggunaan select() memungkinkan server menangani banyak client secara efisien tanpa multithreading.
+---
 
 
 # SOAL 2 - The Battle of Eterion
@@ -1137,45 +1140,18 @@ rm -f orion eternal history.txt
 ipcrm -M 1234
 ipcrm -Q 5678
 ```
+## KESIMPULAN
 
----
+Program ini berhasil mengimplementasikan:
 
-## Kendala
+komunikasi jaringan menggunakan TCP
+manajemen multi-client dengan select()
+sistem logging
+kontrol admin berbasis RPC
 
-* Sinkronisasi data antar client
-* Race condition
-* Input terminal
-* IPC cleanup
+Program ini memberikan pemahaman mendalam tentang:
 
----
-
-## Solusi
-
-* Menggunakan mutex
-* Message queue untuk komunikasi
-* BOT fallback
-* Cooldown system
-
----
-
-## Kesimpulan
-
-Program ini berhasil mengimplementasikan sistem client-server berbasis IPC dengan fitur game interaktif. Penggunaan shared memory memungkinkan efisiensi data, sementara message queue mempermudah komunikasi antar proses.
-
-Program ini juga memperkuat pemahaman tentang:
-
-* IPC Linux
-* Threading
-* Sinkronisasi
-* Manajemen memori
-
----
-
-## Saran
-
-* Tambahkan database per user
-* Matchmaking queue
-* GUI (ncurses)
-* Leaderboard
-
+socket programming
+multiplexing I/O
+manajemen koneksi real-time
 ---
