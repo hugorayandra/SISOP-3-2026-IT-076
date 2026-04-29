@@ -8,6 +8,776 @@
 
 ---
 
+# Soal 1 - Present day, Present time
+
+## Identitas
+
+* Nama  : Muhammad Hugo Rayandra
+* NRP   : 5027251076
+* Kelas : C
+
+---
+
+## Deskripsi Soal
+
+Soal 1 merupakan implementasi sistem komunikasi berbasis client-server menggunakan socket TCP di bahasa C.
+
+Sistem terdiri dari:
+
+* Server: `wired.c`
+* Client: `navi.c`
+* Header: `protocol.h`
+
+Fitur utama:
+
+* Multi-client chat
+* Username unik
+* Broadcast pesan
+* Command `/exit`
+* Mode admin (The Knights)
+* RPC admin (list user, uptime, shutdown)
+* Logging ke file `history.log`
+* Non-blocking I/O menggunakan `select()`
+
+---
+
+## Konsep yang Digunakan
+
+1. Socket Programming (TCP)
+   Digunakan untuk komunikasi antara client dan server.
+
+2. Multiplexing (select)
+   Server dapat menangani banyak client tanpa thread/fork.
+
+3. Client-Server Architecture
+   Server sebagai pusat komunikasi, client sebagai pengguna.
+
+4. Logging System
+   Semua aktivitas dicatat dalam file.
+
+---
+
+## Alur Program
+
+### 1. Server Start
+
+Server dijalankan dan mendengarkan koneksi pada IP dan port tertentu.
+
+---
+
+### 2. Client Connect
+
+Client memasukkan username.
+
+Jika username sudah digunakan:
+
+* Client ditolak
+
+---
+
+### 3. Chat System
+
+* Semua pesan dikirim ke server
+* Server broadcast ke semua client lain
+
+Format:
+
+```id="f6bqk2"
+[username]: pesan
+```
+
+---
+
+### 4. Exit
+
+Client mengetik:
+
+```id="2n3zrd"
+/exit
+```
+
+Client akan disconnect.
+
+---
+
+### 5. Admin Mode
+
+Login sebagai:
+
+```id="7xt8y7"
+The Knights
+```
+
+Password:
+
+```id="9m9n7m"
+protocol7
+```
+
+---
+
+### 6. RPC Admin
+
+Command:
+
+```id="zaz3ha"
+1 → list user aktif
+2 → uptime server
+3 → shutdown server
+```
+
+---
+
+### 7. Logging
+
+Semua aktivitas disimpan ke:
+
+```id="c7ppw0"
+history.log
+```
+
+Contoh:
+
+```id="p4h7gf"
+[2026-04-29 10:00:00] [User] [john]: hello
+```
+
+---
+
+## Struktur Program
+
+```id="jz6a7l"
+protocol.h → konfigurasi & logging
+wired.c    → server
+navi.c     → client
+```
+
+---
+
+# PENJELASAN KODE
+
+## 1. protocol.h
+
+Berisi:
+
+* Konstanta
+* Fungsi logging
+* Timestamp
+
+### Contoh:
+
+```id="j9b6nx"
+#define SERVER_PORT 8080
+```
+
+---
+
+### Fungsi log_event()
+
+```id="q7qk2q"
+void log_event(const char *role, const char *msg)
+```
+
+Menulis log ke file `history.log`.
+
+---
+
+## 2. wired.c (SERVER)
+
+### Struktur Client
+
+```id="k6k4mv"
+typedef struct {
+    int socket;
+    char name[32];
+    int is_admin;
+} Client;
+```
+
+---
+
+### Array Client
+
+```id="gkn6cj"
+Client clients[MAX_CLIENTS];
+```
+
+Digunakan untuk menyimpan semua client aktif.
+
+---
+
+### Fungsi broadcast()
+
+```id="3l8e7p"
+send ke semua client kecuali pengirim
+```
+
+---
+
+### Fungsi remove_client()
+
+```id="qzuv8j"
+close socket dan reset data
+```
+
+---
+
+### select()
+
+```id="0zvlj2"
+select(max_sd + 1, &readfds, NULL, NULL, NULL);
+```
+
+Digunakan untuk:
+
+* menerima koneksi baru
+* membaca pesan dari client
+
+---
+
+### Admin Login
+
+```id="2h4l2c"
+if (username == ADMIN_NAME)
+```
+
+---
+
+### RPC
+
+```id="6dnjlp"
+1 → list user
+2 → uptime
+3 → shutdown
+```
+
+---
+
+## 3. navi.c (CLIENT)
+
+### connect()
+
+```id="h5r3fn"
+connect(sock, ...)
+```
+
+Menghubungkan ke server.
+
+---
+
+### select() di client
+
+Digunakan untuk:
+
+* membaca input user
+* menerima pesan dari server
+
+---
+
+### Input user
+
+```id="z2rj19"
+fgets(msg, ...)
+```
+
+---
+
+### Exit
+
+```id="n4fyhe"
+if (strcmp(msg, "/exit") == 0)
+```
+
+---
+
+## Cara Menjalankan
+
+### Compile
+
+```id="9t2iqg"
+gcc wired.c -o wired
+gcc navi.c -o navi
+```
+
+---
+
+### Run Server
+
+```id="r8t0g1"
+./wired
+```
+
+---
+
+### Run Client
+
+```id="8gq4r9"
+./navi
+```
+
+---
+
+## Cara Membersihkan
+
+```id="xy5dpg"
+rm -f wired navi history.log
+```
+
+---
+
+# PENJELASAN KODE MENYELURUH – SOAL 1 Present day, Present time
+
+## Gambaran Umum Sistem
+
+Program ini merupakan sistem chat berbasis client-server menggunakan socket TCP. Terdapat tiga komponen utama:
+
+* `protocol.h` → konfigurasi dan utilitas (logging, konstanta)
+* `wired.c` → server
+* `navi.c` → client
+
+Alur utama:
+
+1. Server aktif dan menunggu koneksi
+2. Client terhubung dan mengirim username
+3. Server menyimpan client dan memproses pesan
+4. Pesan di-broadcast ke client lain
+5. Admin memiliki kontrol tambahan (RPC)
+
+---
+
+# 1. PENJELASAN protocol.h
+
+File ini berfungsi sebagai pusat konfigurasi dan utilitas yang digunakan oleh server dan client.
+
+---
+
+## Konstanta
+
+```c
+#define MAX_CLIENTS 100
+#define BUFFER_SIZE 1024
+#define NAME_LEN 32
+```
+
+Penjelasan:
+
+* `MAX_CLIENTS` → jumlah maksimal client
+* `BUFFER_SIZE` → ukuran buffer untuk pesan
+* `NAME_LEN` → panjang maksimal username
+
+---
+
+```c
+#define SERVER_IP "127.0.0.1"
+#define SERVER_PORT 8080
+```
+
+Menentukan alamat server.
+
+---
+
+```c
+#define ADMIN_NAME "The Knights"
+#define ADMIN_PASS "protocol7"
+```
+
+Digunakan untuk login admin.
+
+---
+
+## Fungsi get_timestamp()
+
+```c
+time_t now = time(NULL);
+struct tm *t = localtime(&now);
+```
+
+Mengambil waktu sistem saat ini dan mengubahnya ke format lokal.
+
+```c
+strftime(buffer, 32, "[%Y-%m-%d %H:%M:%S]", t);
+```
+
+Mengubah waktu menjadi string.
+
+---
+
+## Fungsi log_event()
+
+```c
+FILE *fp = fopen("history.log", "a");
+```
+
+Membuka file log dalam mode append.
+
+```c
+fprintf(fp, "%s [%s] %s\n", timebuf, role, message);
+```
+
+Menulis log dengan format:
+
+* timestamp
+* role (User/Admin/System)
+* isi pesan
+
+---
+
+# 2. PENJELASAN wired.c (SERVER)
+
+Server adalah pusat komunikasi semua client.
+
+---
+
+## Struktur Client
+
+```c
+typedef struct {
+    int socket;
+    char name[NAME_LEN];
+    int is_admin;
+} Client;
+```
+
+Penjelasan:
+
+* `socket` → descriptor koneksi
+* `name` → username
+* `is_admin` → status admin
+
+---
+
+## Array Clients
+
+```c
+Client clients[MAX_CLIENTS];
+```
+
+Digunakan untuk menyimpan semua client aktif.
+
+---
+
+## Fungsi name_exists()
+
+Melakukan iterasi untuk mengecek apakah username sudah digunakan.
+
+Tujuan:
+
+* mencegah duplikasi username
+
+---
+
+## Fungsi broadcast()
+
+```c
+send(clients[i].socket, msg, strlen(msg), 0);
+```
+
+Mengirim pesan ke semua client kecuali pengirim.
+
+---
+
+## Fungsi remove_client()
+
+```c
+close(clients[i].socket);
+clients[i].socket = 0;
+```
+
+Menutup koneksi dan menghapus data client.
+
+---
+
+## Inisialisasi Server
+
+```c
+server_fd = socket(AF_INET, SOCK_STREAM, 0);
+```
+
+Membuat socket TCP.
+
+```c
+bind(server_fd, ...)
+listen(server_fd, 10);
+```
+
+Mengikat socket ke port dan mulai mendengarkan koneksi.
+
+---
+
+## Mekanisme select()
+
+```c
+FD_SET(server_fd, &readfds);
+```
+
+Menambahkan server socket ke set.
+
+```c
+select(max_sd + 1, &readfds, NULL, NULL, NULL);
+```
+
+Fungsi ini:
+
+* memantau banyak socket
+* non-blocking
+
+---
+
+## Menerima Koneksi Baru
+
+```c
+new_socket = accept(server_fd, NULL, NULL);
+```
+
+Server menerima koneksi client.
+
+```c
+recv(new_socket, name, NAME_LEN, 0);
+```
+
+Menerima username.
+
+---
+
+## Validasi Username
+
+```c
+if (name_exists(name))
+```
+
+Jika username sudah ada:
+
+* kirim "NAME_EXISTS"
+* tutup koneksi
+
+---
+
+## Menyimpan Client
+
+```c
+clients[i].socket = new_socket;
+strcpy(clients[i].name, name);
+```
+
+Menambahkan client ke array.
+
+---
+
+## Menerima Pesan Client
+
+```c
+recv(sd, buffer, BUFFER_SIZE, 0);
+```
+
+Membaca pesan dari client.
+
+---
+
+## Command /exit
+
+```c
+if (strcmp(buffer, "/exit") == 0)
+```
+
+Client akan:
+
+* dihapus
+* koneksi ditutup
+
+---
+
+## Admin Login
+
+```c
+if (strcmp(clients[i].name, ADMIN_NAME) == 0)
+```
+
+Jika username admin:
+
+* meminta password
+* validasi password
+
+---
+
+## Admin RPC
+
+### 1. List User
+
+```c
+for (...)
+```
+
+Menampilkan semua user aktif.
+
+---
+
+### 2. Uptime
+
+```c
+time(NULL) - start_time
+```
+
+Menghitung lama server berjalan.
+
+---
+
+### 3. Shutdown
+
+```c
+exit(0);
+```
+
+Mematikan server.
+
+---
+
+## Broadcast Pesan
+
+```c
+sprintf(msg, "[%s]: %s", name, buffer);
+broadcast(msg, sd);
+```
+
+Format pesan:
+
+```text
+[username]: pesan
+```
+
+---
+
+## Logging
+
+Setiap aktivitas:
+
+* connect
+* disconnect
+* chat
+* admin command
+
+Dicatat dengan:
+
+```c
+log_event(...)
+```
+
+---
+
+# 3. PENJELASAN navi.c (CLIENT)
+
+Client berfungsi sebagai interface pengguna.
+
+---
+
+## Inisialisasi Socket
+
+```c
+sock = socket(AF_INET, SOCK_STREAM, 0);
+```
+
+Membuat socket.
+
+---
+
+## Koneksi ke Server
+
+```c
+connect(sock, ...)
+```
+
+Menghubungkan ke server.
+
+---
+
+## Input Username
+
+```c
+fgets(name, ...)
+```
+
+Mengambil input user.
+
+---
+
+## Pengiriman Username
+
+```c
+send(sock, name, NAME_LEN, 0);
+```
+
+---
+
+## Loop Utama
+
+Menggunakan `select()` untuk:
+
+* membaca input user
+* menerima pesan dari server
+
+---
+
+## Input User
+
+```c
+fgets(msg, ...)
+```
+
+Mengambil pesan dari user.
+
+---
+
+## Kirim Pesan
+
+```c
+send(sock, msg, strlen(msg), 0);
+```
+
+---
+
+## Receive Message
+
+```c
+recv(sock, msg, BUFFER_SIZE, 0);
+```
+
+Menampilkan pesan dari server.
+
+---
+
+## Exit Command
+
+```c
+if (strcmp(msg, "/exit") == 0)
+```
+
+Client keluar.
+
+---
+
+# HUBUNGAN ANTAR KOMPONEN
+
+```text
+CLIENT → SERVER → CLIENT
+```
+
+* Client mengirim pesan ke server
+* Server memproses dan broadcast
+* Client lain menerima
+
+---
+
+# KELEBIHAN DESAIN
+
+* Tidak menggunakan thread di server (efisien)
+* Menggunakan select() untuk multi-client
+* Logging sistematis
+* Mendukung admin control
+
+---
+
+
+
+# SOAL 2 - The Battle of Eterion
 ## Deskripsi Soal
 
 Program ini merupakan implementasi sistem game berbasis client-server menggunakan Inter Process Communication (IPC) di Linux. Sistem terdiri dari dua komponen utama:
